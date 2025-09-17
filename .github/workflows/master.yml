@@ -27,6 +27,6 @@ jobs:
 
     - name: deploy with AWS codeDeploy
       run: aws deploy create-deployment
-        --application-name datalake-deploy
+        --application-name datalake-depoly
         --deployment-group-name spark-deploy
         --s3-location bucket=datalake-actions-deploy-jhkim,bundleType=tgz,key=pyspark-apps/pyspark-apps.tar.gz
