@@ -1,0 +1,32 @@
+name: deploy to spark cluster
+on:
+  push:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout release
+      uses: actions/checkout@v4
+
+    - name: archive to tar.gz
+      run: tar cvfz ./pyspark-apps.tar.gz *
+
+    - name: AWS configure credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET_KEY }}
+        aws-region: ap-northeast-2
+
+    - name: upload to S3
+      run: aws s3 cp --region ap-northeast-2 ./pyspark-apps.tar.gz s3://datalake-actions-deploy-jhkim/pyspark-apps/pyspark-apps.tar.gz
+
+    - name: deploy with AWS codeDeploy
+      run: aws deploy create-deployment
+        --application-name datalake-deploy
+        --deployment-group-name spark-deploy
+        --s3-location bucket=datalake-actions-deploy-jhkim,bundleType=tgz,key=pyspark-apps/pyspark-apps.tar.gz
